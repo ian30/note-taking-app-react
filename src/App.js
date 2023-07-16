@@ -15,7 +15,7 @@ function App() {
     if (cookies.notes) {
       setNotes(cookies.notes);
     }
-  }, []);
+  }, [cookies.notes, setNotes]);
 
   // Function to add a note
   const addNote = () => {
