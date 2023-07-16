@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useCookies } from 'react-cookie';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -6,11 +7,25 @@ function App() {
   const [notes, setNotes] = useState([]); // Stores the notes
   const [currentNote, setCurrentNote] = useState(''); // Stores the value of the current note being entered
 
+  // Use the 'useCookies' hook to access cookies
+  const [cookies, setCookie] = useCookies(['notes']);
+
+  // useEffect hook to restore notes from the 'notes' cookie on component mount
+  useEffect(() => {
+    if (cookies.notes) {
+      setNotes(cookies.notes);
+    }
+  }, []);
+
   // Function to add a note
   const addNote = () => {
     if (currentNote.trim() !== '') {
-      // Add the currentNote value to the notes array
-      setNotes([...notes, currentNote]);
+      // Create a copy of the notes array and add the currentNote value to it
+      const updatedNotes = [...notes, currentNote];
+      // Update the notes state with the updated copy
+      setNotes(updatedNotes);
+      // Update the 'notes' cookie with the updated copy
+      setCookie('notes', updatedNotes, { path: '/' });
       // Reset the currentNote value to an empty string
       setCurrentNote('');
     }
@@ -24,20 +39,19 @@ function App() {
     updatedNotes.splice(index, 1);
     // Update the notes state with the updated copy
     setNotes(updatedNotes);
+    // Update the 'notes' cookie with the updated copy
+    setCookie('notes', updatedNotes, { path: '/' });
   };
 
   // Function to export notes as a text file
   const exportNote = () => {
-    // Divider used to separate notes in the exported file
     const divider = "-----------";
     // Join the notes array with the divider in between each note
     const text = notes.join(`\n${divider}\n`);
-    // Create a new element to download the text file
     const element = document.createElement('a');
     const file = new Blob([text], { type: 'text/plain' });
     element.href = URL.createObjectURL(file);
     element.download = 'notes.txt';
-    // Append the element to the document body and simulate a click to trigger the download
     document.body.appendChild(element);
     element.click();
   };
